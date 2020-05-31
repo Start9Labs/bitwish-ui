@@ -10,47 +10,58 @@ import {
   IonRefresherContent,
   IonTitle,
   IonToolbar,
-  useIonViewWillEnter
+  useIonViewWillEnter,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonImg
 } from '@ionic/react';
 import './Home.css';
 
 const Home: React.FC = () => {
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  let [messages, setMessages] = useState<Message[]>([]);
+  let [page, setPage] = useState(1);
 
-  useIonViewWillEnter(() => {
-    const msgs = getMessages();
-    setMessages(msgs);
+  useIonViewWillEnter(async () => {
+    await nextMessages()
   });
 
-  const refresh = (e: CustomEvent) => {
-    setTimeout(() => {
-      e.detail.complete();
-    }, 3000);
+  const nextMessagesEvent = async (e: CustomEvent) => {
+    await nextMessages();
+    (e.target as HTMLIonInfiniteScrollElement).complete()
+  };
+
+  const nextMessages = async () => {
+    setMessages(messages.concat(await getMessages(page)))
+    setPage(page + 1)
   };
 
   return (
     <IonPage id="home-page">
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Inbox</IonTitle>
+          <IonTitle>
+            <img src="/assets/bitwish.png" width="200" height="50" />
+          </IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        <IonRefresher slot="fixed" onIonRefresh={refresh}>
-          <IonRefresherContent></IonRefresherContent>
-        </IonRefresher>
-
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">
-              Inbox
+            <IonTitle>
+              <IonImg src="/assets/bitwish.png" />
             </IonTitle>
           </IonToolbar>
         </IonHeader>
 
         <IonList>
-          {messages.map(m => <MessageListItem key={m.id} message={m} />)}
+          {messages.map(m => <MessageListItem key={m.txid} message={m} />)}
+          <IonInfiniteScroll threshold="100px"
+            onIonInfinite={nextMessagesEvent}>
+            <IonInfiniteScrollContent
+              loadingText="Loading more wishes...">
+            </IonInfiniteScrollContent>
+          </IonInfiniteScroll>
         </IonList>
       </IonContent>
     </IonPage>

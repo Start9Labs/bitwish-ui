@@ -11,20 +11,26 @@ import {
   IonNote,
   IonPage,
   IonToolbar,
-  useIonViewWillEnter
+  useIonViewWillEnter,
+  IonSpinner
 } from '@ionic/react';
-import { personCircle } from 'ionicons/icons';
+import { personCircle, linkOutline } from 'ionicons/icons';
 import { RouteComponentProps } from 'react-router';
 import './ViewMessage.css';
 
-interface ViewMessageProps extends RouteComponentProps<{ id: string; }> { }
+interface ViewMessageProps extends RouteComponentProps<{ txid: string; }> { }
 
 const ViewMessage: React.FC<ViewMessageProps> = ({ match }) => {
 
-  const [message, setMessage] = useState<Message>();
+  const [message, setMessage] = useState<Message | null>();
 
-  useIonViewWillEnter(() => {
-    const msg = getMessage(parseInt(match.params.id, 10));
+  useIonViewWillEnter(async () => {
+    let msg = null
+    try {
+      msg = await getMessage(match.params.txid);
+    } catch (e) {
+      console.error(e);
+    }
     setMessage(msg);
   });
 
@@ -33,7 +39,7 @@ const ViewMessage: React.FC<ViewMessageProps> = ({ match }) => {
       <IonHeader translucent>
         <IonToolbar>
           <IonButtons>
-            <IonBackButton text="Inbox" defaultHref="/home"></IonBackButton>
+            <IonBackButton text="Feed" defaultHref="/home"></IonBackButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
@@ -42,26 +48,34 @@ const ViewMessage: React.FC<ViewMessageProps> = ({ match }) => {
         {message ? (
           <>
             <IonItem>
-              <IonIcon icon={personCircle} color="primary"></IonIcon>
+              <span className="ion-padding"></span>
               <IonLabel className="ion-text-wrap">
                 <h2>
-                  {message.fromName}
+                  @{message.twitterHandle}
+                  <span>&nbsp;</span>
+                  <a href={`https://www.blockstream.info/tx/${message.txid}`} onClick={e => e.stopPropagation()} title="View on chain">
+                    <IonIcon icon={linkOutline} color="primary" size="small"></IonIcon>
+                  </a>
                   <span className="date">
-                    <IonNote>{message.date}</IonNote>
+                    <IonNote>{message.date.toLocaleString()}</IonNote>
                   </span>
                 </h2>
-                <h3>To: <IonNote>Me</IonNote></h3>
               </IonLabel>
             </IonItem>
 
             <div className="ion-padding">
-              <h1>{message.subject}</h1>
               <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                {message.content}
               </p>
             </div>
           </>
-        ) : <div>Message not found</div>}
+        ) :
+          message === null ? <div>Message not found</div> :
+            <IonSpinner color="primary" style={{
+              position: 'absolute', left: '50%', top: '50%',
+              transform: 'translate(-50%, -50%)'
+            }} />
+        }
       </IonContent>
     </IonPage>
   );

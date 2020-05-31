@@ -1,62 +1,74 @@
+import * as rp from 'request-promise'
+
+const baseAddress = "1JnGQ45UE7tbFYkMg16bTm3jVJYv5YqVWW"
+const baseHandle = "_MattHill_"
+
 export interface Message {
-  fromName: string;
-  subject: string;
-  date: string;
-  id: number;
+  twitterHandle: string;
+  content: string;
+  date: Date;
+  txid: string;
 }
 
 const messages: Message[] = [
   {
-    fromName: 'Matt Chorsey',
-    subject: 'New event: Trip to Vegas',
-    date: '9:32 AM',
-    id: 0
-  },
-  {
-    fromName: 'Lauren Ruthford',
-    subject: 'Long time no chat',
-    date: '6:12 AM',
-    id: 1
-  },
-  {
-    fromName: 'Jordan Firth',
-    subject: 'Report Results',
-    date: '4:55 AM',
-    id: 2
-
-  },
-  {
-    fromName: 'Bill Thomas',
-    subject: 'The situation',
-    date: 'Yesterday',
-    id: 3
-  },
-  {
-    fromName: 'Joanne Pollan',
-    subject: 'Updated invitation: Swim lessons',
-    date: 'Yesterday',
-    id: 4
-  },
-  {
-    fromName: 'Andrea Cornerston',
-    subject: 'Last minute ask',
-    date: 'Yesterday',
-    id: 5
-  },
-  {
-    fromName: 'Moe Chamont',
-    subject: 'Family Calendar - Version 1',
-    date: 'Last Week',
-    id: 6
-  },
-  {
-    fromName: 'Kelly Richardson',
-    subject: 'Placeholder Headhots',
-    date: 'Last Week',
-    id: 7
+    twitterHandle: "asdfads",
+    content: "this is a test",
+    date: new Date(),
+    txid: "deadbeef"
   }
 ];
 
-export const getMessages = () => messages;
+interface Bork {
+  txid: string
+  createdAt: Date
+  content: string
+  extensionsCount: number
+}
 
-export const getMessage = (id: number) => messages.find(m => m.id === id);
+export async function getMessages(page: number = 0, perPage: number = 20): Promise<Message[]> {
+  const res: Bork[] = await rp.get("https://bitwish.start9labs.com:11020/borks", {
+    json: true,
+    headers: { 'my-address': baseAddress },
+    qs: {
+      senderAddress: baseAddress,
+      types: ['bork'],
+      page,
+      perPage,
+    }
+  })
+
+  return res.map(b => {
+    let twitterHandle = baseHandle
+    if (b.content.startsWith("@")) {
+      twitterHandle = b.content?.split(":")[0].substr(1)
+    }
+    if (b.extensionsCount > 0) {
+      b.content += "..."
+    }
+    return {
+      twitterHandle,
+      content: b.content,
+      date: new Date(b.createdAt),
+      txid: b.txid
+    }
+  })
+}
+
+export async function getMessage(txid: string): Promise<Message> {
+  const res: Bork = await rp.get(`https://bitwish.start9labs.com:11020/borks/${txid}`, {
+    json: true,
+    headers: { 'my-address': baseAddress }
+  })
+
+  let twitterHandle = baseHandle
+  if (res.content.startsWith("@")) {
+    twitterHandle = res.content?.split(":")[0].substr(1)
+  }
+  return {
+    twitterHandle,
+    content: res.content,
+    date: new Date(res.createdAt),
+    txid: res.txid
+  }
+}
