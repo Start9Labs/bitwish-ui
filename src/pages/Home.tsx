@@ -1,19 +1,15 @@
 import MessageListItem from '../components/MessageListItem';
 import React, { useState } from 'react';
-import { Message, getMessages } from '../data/messages';
+import { Message, getMessages, perPage } from '../data/messages';
 import {
   IonContent,
   IonHeader,
-  IonList,
   IonPage,
-  IonRefresher,
-  IonRefresherContent,
   IonTitle,
   IonToolbar,
   useIonViewWillEnter,
   IonInfiniteScroll,
-  IonInfiniteScrollContent,
-  IonImg
+  IonInfiniteScrollContent
 } from '@ionic/react';
 import './Home.css';
 
@@ -21,6 +17,7 @@ const Home: React.FC = () => {
 
   let [messages, setMessages] = useState<Message[]>([]);
   let [page, setPage] = useState(1);
+  const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
 
   useIonViewWillEnter(async () => {
     await nextMessages()
@@ -32,7 +29,9 @@ const Home: React.FC = () => {
   };
 
   const nextMessages = async () => {
-    setMessages(messages.concat(await getMessages(page)))
+    const newMessages = await getMessages(page)
+    setDisableInfiniteScroll(newMessages.length < perPage)
+    setMessages(messages.concat(newMessages))
     setPage(page + 1)
   };
 
@@ -41,28 +40,21 @@ const Home: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle>
-            <img src="/assets/bitwish.png" width="200" height="50" />
+            <img src="/assets/bitwish.png" width="200" height="50" alt="logo" />
           </IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle>
-              <IonImg src="/assets/bitwish.png" />
-            </IonTitle>
-          </IonToolbar>
-        </IonHeader>
+        {messages.map(m => <MessageListItem key={m.txid} message={m} />)}
 
-        <IonList>
-          {messages.map(m => <MessageListItem key={m.txid} message={m} />)}
-          <IonInfiniteScroll threshold="100px"
-            onIonInfinite={nextMessagesEvent}>
-            <IonInfiniteScrollContent
-              loadingText="Loading more wishes...">
-            </IonInfiniteScrollContent>
-          </IonInfiniteScroll>
-        </IonList>
+        <IonInfiniteScroll
+          threshold="100px"
+          disabled={disableInfiniteScroll}
+          onIonInfinite={nextMessagesEvent}>
+          <IonInfiniteScrollContent
+            loadingText="Loading more wishes...">
+          </IonInfiniteScrollContent>
+        </IonInfiniteScroll>
       </IonContent>
     </IonPage>
   );

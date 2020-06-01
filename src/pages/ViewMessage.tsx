@@ -14,7 +14,7 @@ import {
   useIonViewWillEnter,
   IonSpinner
 } from '@ionic/react';
-import { personCircle, linkOutline } from 'ionicons/icons';
+import { linkOutline } from 'ionicons/icons';
 import { RouteComponentProps } from 'react-router';
 import './ViewMessage.css';
 
@@ -70,11 +70,12 @@ const ViewMessage: React.FC<ViewMessageProps> = ({ match }) => {
             </div>
           </>
         ) :
-          message === null ? <div>Message not found</div> :
-            <IonSpinner color="primary" style={{
-              position: 'absolute', left: '50%', top: '50%',
-              transform: 'translate(-50%, -50%)'
-            }} />
+          message === null ? (
+          <div>Message not found</div>
+        ) :
+          <IonSpinner color="primary" style={{
+            position: 'absolute', left: '50%', top: '50%',
+          }} />
         }
       </IonContent>
     </IonPage>

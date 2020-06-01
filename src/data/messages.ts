@@ -10,15 +10,6 @@ export interface Message {
   txid: string;
 }
 
-const messages: Message[] = [
-  {
-    twitterHandle: "asdfads",
-    content: "this is a test",
-    date: new Date(),
-    txid: "deadbeef"
-  }
-];
-
 interface Bork {
   txid: string
   createdAt: Date
@@ -26,13 +17,15 @@ interface Bork {
   extensionsCount: number
 }
 
-export async function getMessages(page: number = 0, perPage: number = 20): Promise<Message[]> {
+export const perPage = 40
+
+export async function getMessages(page: number = 0): Promise<Message[]> {
   const res: Bork[] = await rp.get("https://bitwish.start9labs.com:11020/borks", {
     json: true,
     headers: { 'my-address': baseAddress },
     qs: {
       senderAddress: baseAddress,
-      types: ['bork'],
+      // types: ['bork'],
       page,
       perPage,
     }

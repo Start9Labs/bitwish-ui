@@ -1,7 +1,5 @@
 {
-  "name": "bitwish",
-  "integrations": {
-    "capacitor": {}
-  },
+  "name": "Bit Wish",
+  "integrations": {},
   "type": "react"
 }
