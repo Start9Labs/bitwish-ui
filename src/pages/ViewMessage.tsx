@@ -71,11 +71,11 @@ const ViewMessage: React.FC<ViewMessageProps> = ({ match }) => {
           </>
         ) :
           message === null ? (
-          <div>Message not found</div>
-        ) :
-          <IonSpinner color="primary" style={{
-            position: 'absolute', left: '50%', top: '50%',
-          }} />
+            <div>Message not found</div>
+          ) :
+            <IonSpinner color="primary" style={{
+              position: 'absolute', left: '50%', top: '50%',
+            }} />
         }
       </IonContent>
     </IonPage>

@@ -9,7 +9,9 @@ import {
   IonToolbar,
   useIonViewWillEnter,
   IonInfiniteScroll,
-  IonInfiniteScrollContent
+  IonInfiniteScrollContent,
+  IonImg,
+  IonSpinner
 } from '@ionic/react';
 import './Home.css';
 
@@ -18,9 +20,11 @@ const Home: React.FC = () => {
   let [messages, setMessages] = useState<Message[]>([]);
   let [page, setPage] = useState(1);
   const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
+  let [ready, setReady] = useState(false);
 
   useIonViewWillEnter(async () => {
     await nextMessages()
+    setReady(true)
   });
 
   const nextMessagesEvent = async (e: CustomEvent) => {
@@ -44,18 +48,22 @@ const Home: React.FC = () => {
           </IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
-        {messages.map(m => <MessageListItem key={m.txid} message={m} />)}
+      {ready ?
+        <IonContent fullscreen>
+          {messages.map(m => <MessageListItem key={m.txid} message={m} />)}
 
-        <IonInfiniteScroll
-          threshold="100px"
-          disabled={disableInfiniteScroll}
-          onIonInfinite={nextMessagesEvent}>
-          <IonInfiniteScrollContent
-            loadingText="Loading more wishes...">
-          </IonInfiniteScrollContent>
-        </IonInfiniteScroll>
-      </IonContent>
+          <IonInfiniteScroll
+            threshold="100px"
+            disabled={disableInfiniteScroll}
+            onIonInfinite={nextMessagesEvent}>
+            <IonInfiniteScrollContent
+              loadingText="Loading more wishes...">
+            </IonInfiniteScrollContent>
+          </IonInfiniteScroll>
+        </IonContent> : <IonSpinner color="primary" style={{
+          position: 'absolute', left: '50%', top: '50%'
+        }} />
+      }
     </IonPage>
   );
 };
