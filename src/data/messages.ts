@@ -25,7 +25,7 @@ export async function getMessages(page: number = 0): Promise<Message[]> {
     headers: { 'my-address': baseAddress },
     qs: {
       senderAddress: baseAddress,
-      types: ['bork'],
+      types: ['bork', 'comment'],
       page,
       perPage,
     }
